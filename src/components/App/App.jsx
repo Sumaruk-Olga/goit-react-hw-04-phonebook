@@ -1,76 +1,63 @@
-import { Component } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { PageTitle } from 'components/PageTitle/PageTitle.styled';
 import { Container, SectionTitle } from './App.styled';
 import { Contacts } from 'components/Contacts/Contacts';
 import { ContactForm } from 'components/ContactForm/ContactForm';
-import { initialValues } from 'utiles/initialValues';
 import { Filter } from 'components/Filter/Filter';
 
-const LS_KEY='contacts';
+const LS_KEY = 'contacts';
 
+export function App() {  
+  const [contacts, setContacts] = useState([]);
+  const [filter, setFilter] = useState('');
+  const initialValues = useRef(true);
 
-export class App extends Component {
-  state = {
-    contacts: [...initialValues],    
-    filter:''
-  };  
-
-  componentDidMount() {    
-    JSON.parse(localStorage.getItem(LS_KEY));
-    
-    if (localStorage.getItem(LS_KEY)) {
-      this.setState({
-        contacts:JSON.parse(localStorage.getItem(LS_KEY))
-      })
-    }
+  const handleSubmit = (obj) => {
+    setContacts(prevContacts => [...prevContacts, obj])
   }
 
-  componentDidUpdate(prevProps, prevState) {
-    if (this.state.contacts !== prevState.contacts) {      
-      localStorage.setItem(LS_KEY, JSON.stringify(this.state.contacts));
-    }
+  const isNamePresent = (name) => {
+    const normalizedName = name.toLowerCase();
+    return contacts.find(item=>item.name.toLowerCase()===normalizedName);
   }
 
-  handleSubmit = (obj) => {     
-    this.setState(prevState => ({
-      contacts: [...prevState.contacts, obj]
-    }))
+  const handleDeleteContact = (id) => {
+    setContacts(prevContacts => prevContacts.filter(contact => contact.id !== id));
   }
 
-  isNamePresent = (name) => {    
-    const normalizedName = name.toLowerCase();    
-    return this.state.contacts.find(item=>item.name.toLowerCase()===normalizedName);
+  const changeFilter = e => {
+    setFilter(e.currentTarget.value);
   }
 
-  handleDeleteContact = (id) => {
-    this.setState(prevState => ({
-      contacts: prevState.contacts.filter(contact => contact.id !== id),
-    }));    
-  }
-   
-  changeFilter = e => {
-    this.setState({ filter: e.currentTarget.value });
-  }
+  const getVisibleContacts = () => {
+    const normalizedFilter = filter.toLowerCase();
 
-   getVisibleContacts = () => {    
-    const normalizedFilter = this.state.filter.toLowerCase();
-
-    return this.state.contacts.filter(item =>item.name.toLowerCase().includes(normalizedFilter));
+    return contacts.filter(item =>item.name.toLowerCase().includes(normalizedFilter));
   };
 
 
-  render() {
-    
-    return (<>
+  useEffect(() => {     
+    // console.log('initialValues.current', initialValues.current);
+    if (initialValues.current) {
+      // console.log('1 render');
+      if (JSON.parse(localStorage.getItem(LS_KEY))) { setContacts(JSON.parse(localStorage.getItem(LS_KEY))) }
+      initialValues.current = false;
+      return;
+    }
+    // console.log('2+ render');
+    localStorage.setItem(LS_KEY, JSON.stringify(contacts));
+
+  }, [contacts]);
+
+  return (<>
     <PageTitle>goit react hw 03 phonebook</PageTitle>
       <Container>
         <SectionTitle>Phonebook</SectionTitle>
-        <ContactForm onSubmit={this.handleSubmit} isNamePresent={this.isNamePresent} />
-        <Filter value={this.state.filter} onChange={this.changeFilter}/>
+        <ContactForm onSubmit={handleSubmit} isNamePresent={isNamePresent} />
+        <Filter value={filter} onChange={changeFilter}/>
         <SectionTitle>Contacts</SectionTitle>
-        <Contacts contacts={this.getVisibleContacts()} onDelete={this.handleDeleteContact} />
+        <Contacts contacts={getVisibleContacts()} onDelete={handleDeleteContact} />
       </Container>
       </>
     );
-  }
 }
