@@ -7,10 +7,24 @@ import { Filter } from 'components/Filter/Filter';
 
 const LS_KEY = 'contacts';
 
-export function App() {  
+export function App() {
   const [contacts, setContacts] = useState([]);
   const [filter, setFilter] = useState('');
   const initialValues = useRef(true);
+
+  useEffect(() => {   
+    if (initialValues.current) {      
+      if (JSON.parse(localStorage.getItem(LS_KEY))) { setContacts(JSON.parse(localStorage.getItem(LS_KEY))) }
+      initialValues.current = false;
+      return;
+    } 
+  }, []);
+
+  useEffect(() => { 
+    if (!initialValues.current) {
+      localStorage.setItem(LS_KEY, JSON.stringify(contacts));
+    }
+  }, [contacts]);
 
   const handleSubmit = (obj) => {
     setContacts(prevContacts => [...prevContacts, obj])
@@ -18,7 +32,7 @@ export function App() {
 
   const isNamePresent = (name) => {
     const normalizedName = name.toLowerCase();
-    return contacts.find(item=>item.name.toLowerCase()===normalizedName);
+    return contacts.find(item => item.name.toLowerCase() === normalizedName);
   }
 
   const handleDeleteContact = (id) => {
@@ -32,32 +46,18 @@ export function App() {
   const getVisibleContacts = () => {
     const normalizedFilter = filter.toLowerCase();
 
-    return contacts.filter(item =>item.name.toLowerCase().includes(normalizedFilter));
+    return contacts.filter(item => item.name.toLowerCase().includes(normalizedFilter));
   };
-
-
-  useEffect(() => {     
-    // console.log('initialValues.current', initialValues.current);
-    if (initialValues.current) {
-      // console.log('1 render');
-      if (JSON.parse(localStorage.getItem(LS_KEY))) { setContacts(JSON.parse(localStorage.getItem(LS_KEY))) }
-      initialValues.current = false;
-      return;
-    }
-    // console.log('2+ render');
-    localStorage.setItem(LS_KEY, JSON.stringify(contacts));
-
-  }, [contacts]);
 
   return (<>
     <PageTitle>goit react hw 03 phonebook</PageTitle>
-      <Container>
-        <SectionTitle>Phonebook</SectionTitle>
-        <ContactForm onSubmit={handleSubmit} isNamePresent={isNamePresent} />
-        <Filter value={filter} onChange={changeFilter}/>
-        <SectionTitle>Contacts</SectionTitle>
-        <Contacts contacts={getVisibleContacts()} onDelete={handleDeleteContact} />
-      </Container>
-      </>
-    );
+    <Container>
+      <SectionTitle>Phonebook</SectionTitle>
+      <ContactForm onSubmit={handleSubmit} isNamePresent={isNamePresent} />
+      <Filter value={filter} onChange={changeFilter} />
+      <SectionTitle>Contacts</SectionTitle>
+      <Contacts contacts={getVisibleContacts()} onDelete={handleDeleteContact} />
+    </Container>
+  </>
+  );
 }
