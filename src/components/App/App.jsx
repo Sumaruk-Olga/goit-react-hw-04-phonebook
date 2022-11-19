@@ -50,7 +50,7 @@ export function App() {
   };
 
   return (<>
-    <PageTitle>goit react hw 03 phonebook</PageTitle>
+    <PageTitle>goit react hw 04 phonebook</PageTitle>
     <Container>
       <SectionTitle>Phonebook</SectionTitle>
       <ContactForm onSubmit={handleSubmit} isNamePresent={isNamePresent} />

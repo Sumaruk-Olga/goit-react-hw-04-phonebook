@@ -20,6 +20,8 @@ margin-bottom:10px;
 `;
 
 export const DeleteButton = styled.button`
+width:30px;
+height: 30px;
 border: 1px solid ${p => p.theme.colors.accent};
 border-radius: ${p => p.theme.radii.normal};
 cursor: pointer;
